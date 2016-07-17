@@ -11,7 +11,7 @@ import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private final DecimalFormat mDecimalFormat = new DecimalFormat("###,###.#");
+    private final DecimalFormat mDecimalFormat = new DecimalFormat("###,###,###.########");
     private TextView mCalculatorNumber;
     private static final int[] mNumID = {
             R.id.btn_1,
@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
     };
     private Button btnAC;
     private double mNum1 = 0d;
-    private double mNum2 = -1d;
+    private double mNum2 = 0d;
+    private double mNum3 = 0d;
     private int mOperator = -1;
 
     @Override
@@ -57,62 +58,82 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "i = " + i + " " + mOperatorID.length);
         }
         Log.i(TAG, "onCreate(Bundle savedInstanceState)");
+        split("111,111,111.0");
     }
 
     private Button.OnClickListener numClick = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
+
             if(mOperator == -1) {
                 Button clickButton = (Button) v;
                 if(mCalculatorNumber.getText().equals("0") && v.getId() == R.id.btn_point) {
-                    mCalculatorNumber.setText(mCalculatorNumber.getText().toString() + clickButton.getText());
-                } else if(mCalculatorNumber.getText().equals("0")){
-                    if(v.getId() != R.id.btn_0) {
-                        btnAC.setText(getString(R.string.btn_c));
-                    }
+                    mCalculatorNumber.setText("0.");
+                } else if(mCalculatorNumber.getText().equals("0")) {
                     mCalculatorNumber.setText(clickButton.getText());
                 } else {
                     mCalculatorNumber.setText(mCalculatorNumber.getText().toString() + clickButton.getText());
                 }
+                mNum1 = Double.valueOf(mCalculatorNumber.getText().toString());
+                mNum2 = Double.valueOf(mCalculatorNumber.getText().toString());
             } else if(mOperator == 0 || mOperator == 1 || mOperator == 2 || mOperator == 3) {
                 Button clickButton = (Button) v;
-                if(mNum2 == -1d && v.getId() == R.id.btn_point) {
-                    mCalculatorNumber.setText(getString(R.string.btn_0) + clickButton.getText());
-                } else if(mNum2 == -1d){
+                if(mNum3 == 0d && v.getId() == R.id.btn_point) {
+                    mCalculatorNumber.setText("0.");
+                } else if(mNum3 == 0d) {
                     mCalculatorNumber.setText(clickButton.getText());
                 } else {
                     mCalculatorNumber.setText(mCalculatorNumber.getText().toString() + clickButton.getText());
                 }
                 mNum2 = Double.valueOf(mCalculatorNumber.getText().toString());
+                mNum3 = Double.valueOf(mCalculatorNumber.getText().toString());
             }
+            Log.i(TAG, mNum1 + " " + mNum2 + " " + mNum3);
         }
     };
 
     private Button.OnClickListener operatorClick = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
+
             switch(v.getId()) {
                 case(R.id.btn_plus):
                     mOperator = 0;
-                    mNum1 = Double.valueOf(mCalculatorNumber.getText().toString());
+                    if(mNum2 == mNum3) {
+                        mCalculatorNumber.setText(Calculator(mNum1,mNum2));
+                    }
+                    mNum2 = mNum1;
+                    mNum3 = 0d;
                     break;
                 case(R.id.btn_less):
                     mOperator = 1;
-                    mNum1 = Double.valueOf(mCalculatorNumber.getText().toString());
+                    if(mNum2 == mNum3) {
+                        mCalculatorNumber.setText(Calculator(mNum1,mNum2));
+                    }
+                    mNum2 = mNum1;
+                    mNum3 = 0d;
                     break;
                 case(R.id.btn_multiply):
                     mOperator = 2;
-                    mNum1 = Double.valueOf(mCalculatorNumber.getText().toString());
+                    if(mNum2 == mNum3) {
+                        mCalculatorNumber.setText(Calculator(mNum1,mNum2));
+                    }
+                    mNum2 = mNum1;
+                    mNum3 = 0d;
                     break;
                 case(R.id.btn_except):
                     mOperator = 3;
-                    mNum1 = Double.valueOf(mCalculatorNumber.getText().toString());
+                    if(mNum2 == mNum3) {
+                        mCalculatorNumber.setText(Calculator(mNum1,mNum2));
+                    }
+                    mNum2 = mNum1;
+                    mNum3 = 0d;
                     break;
                 case(R.id.btn_equal):
                     mCalculatorNumber.setText(Calculator(mNum1,mNum2));
                     break;
             }
-            Log.i(TAG, mNum1 + " " + mNum2);
+            Log.i(TAG, mNum1 + " " + mNum2 + " " + mNum3);
         }
     };
 
@@ -123,27 +144,41 @@ public class MainActivity extends AppCompatActivity {
                 btnAC.setText(getString(R.string.btn_ac));
                 mCalculatorNumber.setText(getString(R.string.btn_0));
                 mNum1 = 0d;
-                mNum2 = -1d;
+                mNum2 = 0d;
+                mNum3 = 0d;
                 mOperator = -1;
             }
+            Log.i(TAG, mNum1 + " " + mNum2 + " " + mNum3);
         }
     };
 
     private String Calculator(double num1, double num2) {
         String result = "";
         if(mOperator == 0) {
-            result = mDecimalFormat.format(num1 + num2);
+            result = String.valueOf(num1 + num2);
             mNum1 += mNum2;
         } else if(mOperator == 1) {
-            result = mDecimalFormat.format(num1 - num2);
+            result = String.valueOf(num1 - num2);
             mNum1 -= mNum2;
         } else if(mOperator == 2) {
-            result = mDecimalFormat.format(num1 * num2);
+            result = String.valueOf(num1 * num2);
             mNum1 *= mNum2;
         } else if(mOperator == 3) {
-            result = mDecimalFormat.format(num1 / num2);
+            result = String.valueOf(num1 / num2);
             mNum1 /= mNum2;
+        } else {
+            result = mCalculatorNumber.getText().toString();
         }
         return result;
     };
+
+    private String split(String num) {
+        String[] tokens = num.split(",");
+        String sum = "";
+        for (String token:tokens) {
+            sum += token;
+        }
+        Log.i(TAG, "split = " + sum);
+        return sum;
+    }
 }
